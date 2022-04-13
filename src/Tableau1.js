@@ -24,6 +24,7 @@ class Tableau1 extends Phaser.Scene{
 
     create()
     {
+        this.cameras.main.setRoundPixels(true);
         const backgroundImage = this.add.image(0, 0,'background').setOrigin(0, 0);
         backgroundImage.setScale(2, 0.8);
 
@@ -68,9 +69,23 @@ class Tableau1 extends Phaser.Scene{
 
 
         let me = this;
-        const eau = map.createStaticLayer('Eau', tileset, 0, 0);
+        const eau = map.createLayer('Eau', tileset, 0, 0);
         eau.setCollisionByExclusion(-1, true);
-        this.physics.add.overlap(eau,this.player, this.dansleau.bind(this));
+
+        this.eaus = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        // Let's get the spike objects, these are NOT sprites
+        // We'll create eau in our sprite group for each object in our map
+        map.getObjectLayer('Eauo').objects.forEach((eauo) => {
+            this.eauoo = this.eaus.create(eauo.x, eauo.y).setOrigin(0).setDisplaySize(eauo.width,eauo.height);
+            //this.eauoo.visible = false ;
+        });
+        //this.physics.add.overlap(eauo,this.player, this.dansleau.bind(this));
+        this.physics.add.overlap(this.player, this.eaus,function () {
+            console.log("yfrjh")
+        });
 
 
         this.inputs();
