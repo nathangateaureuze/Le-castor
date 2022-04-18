@@ -8,6 +8,9 @@ class Tableau1 extends Phaser.Scene{
 
         //piques
         this.load.image('spike', 'assets/tiled/images/spike.png');
+        this.load.image('saw', 'assets/tiled/images/saw.png');
+        this.load.image('checkpoints', 'assets/tiled/images/checkpoints.png');
+        this.load.image('ressources', 'assets/tiled/images/ressources.png');
 
         //player png assets + découpage
         this.load.atlas('player', 'assets/tiled/images/kenney_player.png','assets/tiled/images/kenney_player_atlas.json');
@@ -24,6 +27,10 @@ class Tableau1 extends Phaser.Scene{
 
     create()
     {
+        this.sautage = false;
+        this.danseau = false;
+        this.materiaux = 0;
+
         this.cameras.main.setRoundPixels(true);
         const backgroundImage = this.add.image(0, 0,'background').setOrigin(0, 0);
         backgroundImage.setScale(2, 0.8);
@@ -36,13 +43,98 @@ class Tableau1 extends Phaser.Scene{
 
         platforms.setCollisionByExclusion(-1, true);
 
+        this.speciales = map.createLayer('Speciales', tileset, 0, 0);
 
 
 
-        this.player = this.physics.add.sprite(50, 0, 'player');
-        this.player.setBounce(0.1);
-        this.player.setCollideWorldBounds(true);
+
+        let me = this;
+        const eau = map.createLayer('Eau', tileset, 0, 0);
+        eau.setCollisionByExclusion(-1, true);
+
+
+        this.barrages = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('Barrage').objects.forEach((barrage) => {
+            this.barrageboup = this.barrages.create(barrage.x, barrage.y-barrage.height,"saw").setOrigin(0).setDisplaySize(barrage.width,barrage.height);
+        });
+
+        this.checkpoints = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('Checkpoints').objects.forEach((checkpoint) => {
+            this.checkpointboup = this.checkpoints.create(checkpoint.x, checkpoint.y-checkpoint.height,"checkpoints").setOrigin(0).setDisplaySize(checkpoint.width,checkpoint.height);
+        });
+
+        this.ressources = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('Ressources').objects.forEach((ressource) => {
+            this.ressourceboup = this.ressources.create(ressource.x, ressource.y-ressource.height,"ressources").setOrigin(0).setDisplaySize(ressource.width,ressource.height);
+        });
+        this.constructeurs = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('Constructeur').objects.forEach((constructeur) => {
+            this.constructeurboup = this.constructeurs.create(constructeur.x, constructeur.y-constructeur.height,"ressources").setOrigin(0).setDisplaySize(constructeur.width,constructeur.height);
+        });
+
+
+        this.eaus = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('Eauo').objects.forEach((eauo) => {
+            this.eauoo = this.eaus.create(eauo.x, eauo.y).setOrigin(0).setDisplaySize(eauo.width,eauo.height);
+            //this.eauoo.visible = false ;
+        });
+
+
+        this.eauss = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('Surface').objects.forEach((eauos) => {
+            this.eausoo = this.eauss.create(eauos.x, eauos.y).setOrigin(0).setDisplaySize(eauos.width,eauos.height);
+            //this.eausoo.visible = false ;
+        });
+
+        this.player = this.physics.add.sprite(100, 100, 'player');
+
+        this.checkpointY = 100;
+        this.checkpointX = 100;
+        this.physics.add.overlap(this.player, this.checkpoints,function ()
+        {
+            me.checkpointX = me.player.x;
+            me.checkpointY = me.player.y;
+        });
+
+        this.physics.add.collider(this.player, this.ressources,function (joueur , ressource)
+        {
+            me.materiaux += 1 ;
+            ressource.destroy();
+        });
         this.physics.add.collider(this.player, platforms);
+        this.physics.add.collider(this.player, this.speciales);
+        this.physics.add.collider(this.player, this.barrages,function ()
+        {
+            me.respawn();
+        });
+        this.physics.add.overlap(this.player, this.constructeurs,function ()
+        {
+            if (me.materiaux >= 1)
+            {
+                me.materiaux -= 1;
+                const ponts = map.createLayer('Ponts', tileset, 0, 0);
+                ponts.setCollisionByExclusion(-1, true);
+                me.physics.add.collider(me.player, ponts);
+            }
+        });
         this.anims.create({
             key: 'walk',
             frames: this.anims.generateFrameNames('player', {
@@ -63,53 +155,86 @@ class Tableau1 extends Phaser.Scene{
             frames: [{ key: 'player', frame: 'robo_player_1' }],
             frameRate: 10,
         });
-        this.cursors = this.input.keyboard.createCursorKeys();
+
+        this.sword = this.physics.add.sprite(100, 100, "saw");
+        this.sword.body.setAllowGravity(false);
+        this.sword.setDepth(1);
+        this.sword.setVisible(false);
+        this.sword.attack = 100;
+        this.sword.disableBody();
+
+        this.physics.add.overlap(this.player, this.eaus);
+        //this.physics.add.overlap(this.player, this.eauss);
 
 
-
-
-        let me = this;
-        const eau = map.createLayer('Eau', tileset, 0, 0);
-        eau.setCollisionByExclusion(-1, true);
-
-        this.eaus = this.physics.add.group({
-            allowGravity: false,
-            immovable: true
-        });
-        // Let's get the spike objects, these are NOT sprites
-        // We'll create eau in our sprite group for each object in our map
-        map.getObjectLayer('Eauo').objects.forEach((eauo) => {
-            this.eauoo = this.eaus.create(eauo.x, eauo.y).setOrigin(0).setDisplaySize(eauo.width,eauo.height);
-            //this.eauoo.visible = false ;
-        });
-        //this.physics.add.overlap(eauo,this.player, this.dansleau.bind(this));
-        this.physics.add.overlap(this.player, this.eaus,function () {
-            console.log("yfrjh")
-        });
-
-
+        this.cameras.main.startFollow(this.player);
+        this.cameras.main.setRoundPixels(true);
         this.inputs();
     }
 
-    dansleau()
+    respawn()
     {
-        console.log("dans l'eau");
+        this.player.setPosition(this.checkpointX,this.checkpointY);
     }
-
 
     //position objet
     inputs()
     {
+        let me = this;
+
         //touches enfoncées
         this.input.keyboard.on('keydown', function(kevent)
         {
             switch (kevent.keyCode)
             {
                 case Phaser.Input.Keyboard.KeyCodes.RIGHT:
-                    //console.log("DROITE ENFONCÉE :o")
+                    if (me.danseau == false)
+                    {
+                        me.player.setVelocityX(200);
+                        if (me.player.body.onFloor()) {
+                            me.player.play('walk', true);
+                        }
+                    }
+                    else
+                    {
+                        me.player.setVelocityX(300);
+                    }
                     break;
                 case Phaser.Input.Keyboard.KeyCodes.LEFT:
-                    //console.log("GAUCHE ENFONCÉE :o")
+                    if (me.danseau == false)
+                    {
+                        me.player.setVelocityX(-200);
+                        if (me.player.body.onFloor()) {
+                            me.player.play('walk', true);
+                        }
+                    }
+                    else
+                    {
+                        me.player.setVelocityX(-300);
+                    }
+                    break;
+                case Phaser.Input.Keyboard.KeyCodes.UP:
+                    if (me.danseau == true)
+                    {
+                        me.player.setVelocityY(-300);
+                    }
+                    break;
+                case Phaser.Input.Keyboard.KeyCodes.DOWN:
+                    if (me.danseau == true)
+                    {
+                        me.player.setVelocityY(300);
+                    }
+                    break;
+                case Phaser.Input.Keyboard.KeyCodes.SPACE:
+                    if (me.player.body.onFloor() || me.sautage == true) {
+                        me.sautage = false;
+                        me.player.setVelocityY(-650);
+                        me.player.play('jump', true);
+                    }
+                    break;
+                default:
+                    me.player.play('idle', true);
+                    me.player.setVelocityX(0);
                     break;
             }
         });
@@ -120,10 +245,55 @@ class Tableau1 extends Phaser.Scene{
             switch (kevent.keyCode)
             {
                 case Phaser.Input.Keyboard.KeyCodes.RIGHT:
-                    console.log("DROITE RELÂCHÉE :o")
+                    me.player.play('idle', true);
+                    me.player.setVelocityX(0);
                     break;
                 case Phaser.Input.Keyboard.KeyCodes.LEFT:
-                    console.log("GAUCHE RELÂCHÉE :o")
+                    me.player.play('idle', true);
+                    me.player.setVelocityX(0);
+                    break;
+                case Phaser.Input.Keyboard.KeyCodes.UP:
+                    if (me.danseau == true)
+                    {
+                        me.player.setVelocityY(25);
+                    }
+                    break;
+                case Phaser.Input.Keyboard.KeyCodes.DOWN:
+                    if (me.danseau == true)
+                    {
+                        me.player.setVelocityY(25);
+                    }
+                    break;
+                case Phaser.Input.Keyboard.KeyCodes.S:
+                    me.sword.setVisible(true);
+                    me.sword.enableBody()
+                    me.time.addEvent({ delay: 250, callback: function (){
+                            me.sword.disableBody()
+                            me.sword.setVisible(false);
+                        }, callbackScope: me });
+                    break;
+                case Phaser.Input.Keyboard.KeyCodes.X:
+                    if(me.player.body.onFloor())
+                    {
+                        me.sautage = true;
+                        me.player.setVelocityY(-850);
+
+                        me.sword.setVisible(true);
+                        me.sword.enableBody()
+                        me.time.addEvent({ delay: 250, callback: function (){
+                                me.sword.disableBody()
+                                me.sword.setVisible(false);
+                                me.player.setVelocityY(0);
+                            }, callbackScope: me });
+                    }
+                    break;
+                case Phaser.Input.Keyboard.KeyCodes.SPACE:
+                    me.player.play('idle', true);
+                    me.player.setVelocityX(0);
+                    break;
+                default:
+                    me.player.play('idle', true);
+                    me.player.setVelocityX(0);
                     break;
             }
         });
@@ -132,33 +302,29 @@ class Tableau1 extends Phaser.Scene{
 
     update()
     {
-        // Control the player with left or right keys
-        if (this.cursors.left.isDown) {
-            this.player.setVelocityX(-200);
-            if (this.player.body.onFloor()) {
-                this.player.play('walk', true);
-            }
-        } else if (this.cursors.right.isDown) {
-            this.player.setVelocityX(200);
-            if (this.player.body.onFloor()) {
-                this.player.play('walk', true);
-            }
-        } else {
-            // If no keys are pressed, the player keeps still
-            this.player.setVelocityX(0);
-            // Only show the idle animation if the player is footed
-            // If this is not included, the player would look idle while jumping
-            if (this.player.body.onFloor()) {
-                this.player.play('idle', true);
-            }
+        if (this.player.body.velocity.y > 0)
+        {
+            this.speciales.setCollisionByExclusion(-1, true);
+        }
+        else
+        {
+            this.speciales.setCollisionByExclusion(-1, false);
         }
 
-        // Player can jump while walking any direction by pressing the space bar
-        // or the 'UP' arrow
-        if ((this.cursors.space.isDown || this.cursors.up.isDown) && this.player.body.onFloor()) {
-            this.player.setVelocityY(-350);
-            this.player.play('jump', true);
+        this.danseau = this.physics.overlap(this.player, this.eaus) ? true : false;
+        console.log(this.player.gravityY);
+        if (this.danseau == true)
+        {
+
+            this.player.setGravity(0, -981);
         }
+        else
+        {
+            this.player.setGravity(0, 981);
+        }
+
+        this.sword.x = this.player.x+10;
+        this.sword.y = this.player.y;
 
         if (this.player.body.velocity.x > 0) {
             this.player.setFlipX(false);
