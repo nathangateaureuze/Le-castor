@@ -11,6 +11,7 @@ class Tableau1 extends Phaser.Scene{
         this.load.image('saw', 'assets/tiled/images/saw.png');
         this.load.image('checkpoints', 'assets/tiled/images/checkpoints.png');
         this.load.image('ressources', 'assets/tiled/images/ressources.png');
+        this.load.image('branches', 'assets/tiled/images/branches.png');
 
         //player png assets + découpage
         this.load.atlas('player', 'assets/tiled/images/kenney_player.png','assets/tiled/images/kenney_player_atlas.json');
@@ -29,6 +30,7 @@ class Tableau1 extends Phaser.Scene{
     {
         this.sautage = false;
         this.danseau = false;
+        this.danssurface = false;
         this.materiaux = 0;
 
         this.cameras.main.setRoundPixels(true);
@@ -69,13 +71,24 @@ class Tableau1 extends Phaser.Scene{
             this.checkpointboup = this.checkpoints.create(checkpoint.x, checkpoint.y-checkpoint.height,"checkpoints").setOrigin(0).setDisplaySize(checkpoint.width,checkpoint.height);
         });
 
-        this.ressources = this.physics.add.group({
+        this.branches = this.physics.add.group({
             allowGravity: false,
             immovable: true
         });
+        map.getObjectLayer('Branches').objects.forEach((branche) => {
+            this.brancheboup = this.branches.create(branche.x, branche.y-branche.height,"branches").setOrigin(0).setDisplaySize(branche.width,branche.height);
+        });
+
+        this.ressources = this.physics.add.group({
+            allowGravity: true,
+            immovable: true
+        });
+        this.physics.add.collider(this.ressources, platforms);
+        this.physics.add.collider(this.ressources, this.speciales);
         map.getObjectLayer('Ressources').objects.forEach((ressource) => {
             this.ressourceboup = this.ressources.create(ressource.x, ressource.y-ressource.height,"ressources").setOrigin(0).setDisplaySize(ressource.width,ressource.height);
         });
+
         this.constructeurs = this.physics.add.group({
             allowGravity: false,
             immovable: true
@@ -104,7 +117,7 @@ class Tableau1 extends Phaser.Scene{
             //this.eausoo.visible = false ;
         });
 
-        this.player = this.physics.add.sprite(100, 100, 'player');
+        this.player = this.physics.add.sprite(3000, 100, 'player');
 
         this.checkpointY = 100;
         this.checkpointX = 100;
@@ -162,6 +175,12 @@ class Tableau1 extends Phaser.Scene{
         this.sword.setVisible(false);
         this.sword.attack = 100;
         this.sword.disableBody();
+        this.physics.add.collider(this.sword, this.branches,function (crocs , branche)
+        {
+            me.ressourceboup = me.ressources.create(branche.x, branche.y-branche.height,"ressources").setOrigin(0)
+            me.materiaux += 1 ;
+            branche.destroy();
+        });
 
         this.physics.add.overlap(this.player, this.eaus);
         //this.physics.add.overlap(this.player, this.eauss);
@@ -226,7 +245,7 @@ class Tableau1 extends Phaser.Scene{
                     }
                     break;
                 case Phaser.Input.Keyboard.KeyCodes.SPACE:
-                    if (me.player.body.onFloor() || me.sautage == true) {
+                    if (me.player.body.onFloor() || me.sautage == true || me.danssurface == true) {
                         me.sautage = false;
                         me.player.setVelocityY(-650);
                         me.player.play('jump', true);
@@ -312,24 +331,42 @@ class Tableau1 extends Phaser.Scene{
         }
 
         this.danseau = this.physics.overlap(this.player, this.eaus) ? true : false;
+        this.danssurface = this.physics.overlap(this.player, this.eauss) ? true : false;
         console.log(this.player.gravityY);
-        if (this.danseau == true)
+        if (this.danssurface == true)
         {
-
-            this.player.setGravity(0, -981);
+            this.player.setGravityY(-100);
         }
         else
         {
-            this.player.setGravity(0, 981);
+            if (this.danseau == true)
+            {
+                this.player.setGravityY(-1000);
+                if (this.player.body.velocity.y > 0)
+                {
+                    this.player.setFlipY(true);
+                }
+                else if (this.player.body.velocity.y < 0)
+                {
+                    this.player.setFlipY(false);
+                }
+            }
+            else
+            {
+                this.player.setGravityY(981);
+                this.player.setFlipY(false);
+            }
         }
 
-        this.sword.x = this.player.x+10;
         this.sword.y = this.player.y;
-
-        if (this.player.body.velocity.x > 0) {
+        if (this.player.body.velocity.x > 0)
+        {
+            this.sword.x = this.player.x+20;
             this.player.setFlipX(false);
-        } else if (this.player.body.velocity.x < 0) {
-            // otherwise, make them face the other side
+        }
+        else if (this.player.body.velocity.x < 0)
+        {
+            this.sword.x = this.player.x-20;
             this.player.setFlipX(true);
         }
     }
