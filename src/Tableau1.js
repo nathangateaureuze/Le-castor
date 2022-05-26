@@ -342,19 +342,10 @@ class Tableau1 extends Phaser.Scene{
             if (this.danseau == true)
             {
                 this.player.setGravityY(-1000);
-                if (this.player.body.velocity.y > 0)
-                {
-                    this.player.setFlipY(true);
-                }
-                else if (this.player.body.velocity.y < 0)
-                {
-                    this.player.setFlipY(false);
-                }
             }
             else
             {
                 this.player.setGravityY(981);
-                this.player.setFlipY(false);
             }
         }
 
