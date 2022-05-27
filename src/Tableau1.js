@@ -20,7 +20,7 @@ class Tableau1 extends Phaser.Scene{
         this.load.image('tiles', 'assets/tiled/tilesets/platformPack_tilesheet.png');
 
         //tiled json map
-        this.load.tilemapTiledJSON('map', 'assets/tiled/tilemaps/level1.json');
+        this.load.tilemapTiledJSON('map', 'assets/tiled/tilemaps/leveltest.json');
 
         //tileset png
         this.load.image('tileset','assets/tiled/tilesets/platformPack_tilesheet.png');
