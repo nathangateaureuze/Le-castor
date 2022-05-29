@@ -2,192 +2,242 @@ class Tableau1 extends Phaser.Scene{
 
     preload()
     {
+        //images
+        this.load.image('castor', 'assets/tiled/images/marchestatic.png');
 
-        //fond
-        this.load.image('background', 'assets/tiled/images/background.png');
+        for (var i = 0; i < 3;i++)
+        {
+            this.load.image('glouton'+i, 'assets/tiled/images/petit glouton/glouton ptit'+(i+2)+'.png');
+        }
 
-        //piques
-        this.load.image('spike', 'assets/tiled/images/spike.png');
-        this.load.image('saw', 'assets/tiled/images/saw.png');
-        this.load.image('checkpoints', 'assets/tiled/images/checkpoints.png');
-        this.load.image('ressources', 'assets/tiled/images/ressources.png');
-        this.load.image('branches', 'assets/tiled/images/branches.png');
+        this.load.image('glaise', 'assets/tiled/images/glaise.png');
+        this.load.image('baton', 'assets/tiled/images/baton.png');
 
-        //player png assets + découpage
-        this.load.atlas('player', 'assets/tiled/images/kenney_player.png','assets/tiled/images/kenney_player_atlas.json');
+        this.load.image('branche', 'assets/tiled/images/branche.png');
 
-        //tiled png map
-        this.load.image('tiles', 'assets/tiled/tilesets/platformPack_tilesheet.png');
+        this.load.image('vide', 'assets/tiled/images/vide.png');
+        this.load.image('ciel', 'assets/tiled/images/ciel.png');
 
         //tiled json map
-        this.load.tilemapTiledJSON('map', 'assets/tiled/tilemaps/leveltest.json');
+        this.load.tilemapTiledJSON('map', 'assets/tiled/tilemaps/level1.json');
 
         //tileset png
-        this.load.image('tileset','assets/tiled/tilesets/platformPack_tilesheet.png');
+        this.load.image('tileset','assets/tiled/tilesets/tileset_foret.png');
     }
 
     create()
     {
+        let me = this;
+
         this.sautage = false;
         this.danseau = false;
         this.danssurface = false;
-        this.materiaux = 0;
-
-        this.cameras.main.setRoundPixels(true);
-        const backgroundImage = this.add.image(0, 0,'background').setOrigin(0, 0);
-        backgroundImage.setScale(2, 0.8);
-
-        const map = this.make.tilemap({ key: 'map' });
-
-        const tileset = map.addTilesetImage('kenny_simple_platformer', 'tiles');
-
-        const platforms = map.createLayer('Platforms', tileset, 0, 0);
-
-        platforms.setCollisionByExclusion(-1, true);
-
-        this.speciales = map.createLayer('Speciales', tileset, 0, 0);
-
-
-
-
-        let me = this;
-        const eau = map.createLayer('Eau', tileset, 0, 0);
-        eau.setCollisionByExclusion(-1, true);
-
-
-        this.barrages = this.physics.add.group({
-            allowGravity: false,
-            immovable: true
-        });
-        map.getObjectLayer('Barrage').objects.forEach((barrage) => {
-            this.barrageboup = this.barrages.create(barrage.x, barrage.y-barrage.height,"saw").setOrigin(0).setDisplaySize(barrage.width,barrage.height);
-        });
-
-        this.checkpoints = this.physics.add.group({
-            allowGravity: false,
-            immovable: true
-        });
-        map.getObjectLayer('Checkpoints').objects.forEach((checkpoint) => {
-            this.checkpointboup = this.checkpoints.create(checkpoint.x, checkpoint.y-checkpoint.height,"checkpoints").setOrigin(0).setDisplaySize(checkpoint.width,checkpoint.height);
-        });
-
-        this.branches = this.physics.add.group({
-            allowGravity: false,
-            immovable: true
-        });
-        map.getObjectLayer('Branches').objects.forEach((branche) => {
-            this.brancheboup = this.branches.create(branche.x, branche.y-branche.height,"branches").setOrigin(0).setDisplaySize(branche.width,branche.height);
-        });
-
-        this.ressources = this.physics.add.group({
-            allowGravity: true,
-            immovable: true
-        });
-        this.physics.add.collider(this.ressources, platforms);
-        this.physics.add.collider(this.ressources, this.speciales);
-        map.getObjectLayer('Ressources').objects.forEach((ressource) => {
-            this.ressourceboup = this.ressources.create(ressource.x, ressource.y-ressource.height,"ressources").setOrigin(0).setDisplaySize(ressource.width,ressource.height);
-        });
-
-        this.constructeurs = this.physics.add.group({
-            allowGravity: false,
-            immovable: true
-        });
-        map.getObjectLayer('Constructeur').objects.forEach((constructeur) => {
-            this.constructeurboup = this.constructeurs.create(constructeur.x, constructeur.y-constructeur.height,"ressources").setOrigin(0).setDisplaySize(constructeur.width,constructeur.height);
-        });
-
-
-        this.eaus = this.physics.add.group({
-            allowGravity: false,
-            immovable: true
-        });
-        map.getObjectLayer('Eauo').objects.forEach((eauo) => {
-            this.eauoo = this.eaus.create(eauo.x, eauo.y).setOrigin(0).setDisplaySize(eauo.width,eauo.height);
-            //this.eauoo.visible = false ;
-        });
-
-
-        this.eauss = this.physics.add.group({
-            allowGravity: false,
-            immovable: true
-        });
-        map.getObjectLayer('Surface').objects.forEach((eauos) => {
-            this.eausoo = this.eauss.create(eauos.x, eauos.y).setOrigin(0).setDisplaySize(eauos.width,eauos.height);
-            //this.eausoo.visible = false ;
-        });
-
-        this.player = this.physics.add.sprite(3000, 100, 'player');
 
         this.checkpointY = 100;
         this.checkpointX = 100;
-        this.physics.add.overlap(this.player, this.checkpoints,function ()
+
+        this.baton = 0;
+        this.glaise = 0;
+
+        this.anims.create({
+            key: 'glouton',
+            frames: [
+                {key:'glouton0'},
+                {key:'glouton1'},
+                {key:'glouton2'},
+            ],
+            frameRate: 8,
+            repeat: -1
+        });
+        // this.bganimation.play('bg-animation');
+
+        const map = this.make.tilemap({ key: 'map' });
+        const tileset = map.addTilesetImage('tileset_foret', 'tileset');
+
+        const fond = map.createLayer('fond', tileset, 0, 0);
+        const nuage = map.createLayer('nuage', tileset, 0, 0);
+        const foret_fond = map.createLayer('foret_fond', tileset, 0, 0);
+        const foret_clair = map.createLayer('foret_clair', tileset, 0, 0);
+        const foret_foncee = map.createLayer('foret_foncee', tileset, 0, 0);
+        const arbre = map.createLayer('arbre', tileset, 0, 0);
+
+        this.player = this.physics.add.sprite(6671, 685, 'castor');
+
+        this.collision_sol = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('collision_sol').objects.forEach((sol) => {
+            this.collision_sol_boup = this.collision_sol.create(sol.x, sol.y,"vide").setOrigin(0).setDisplaySize(sol.width,sol.height);
+        });
+
+        map.getObjectLayer('glouton').objects.forEach((mechant) => {
+            this.glouton = this.physics.add.sprite(mechant.x, mechant.y, 'glouton0');
+            this.glouton.play('glouton');
+            this.direction = false;
+            this.physics.add.collider(this.glouton, this.collision_sol);
+            this.physics.add.collider(this.glouton, this.player,function ()
+            {
+                me.respawn();
+            });
+            this.physics.add.collider(this.crocs, this.glouton,function (crocs , glouton)
+            {
+                glouton.destroy();
+                if (Phaser.Math.Between(0, 1))
+                {
+                    me.objet_bois = me.physics.add.sprite(glouton.x, glouton.y-glouton.height,"baton").setOrigin(0);
+                    me.physics.add.collider(me.collision_sol,me.objet_bois);
+                    me.physics.add.collider(me.player, me.objet_bois,function (player,baton)
+                    {
+                        if (baton.body.onFloor())
+                        {
+                            me.baton += 1;
+                            baton.destroy();
+                        }
+                    });
+                }
+                else
+                {
+                    me.objet_glaise = me.physics.add.sprite(glouton.x, glouton.y-glouton.height,"glaise").setOrigin(0);
+                    me.physics.add.collider(me.collision_sol,me.objet_glaise);
+                    me.physics.add.collider(me.player, me.objet_glaise,function (player,glaise)
+                    {
+                        if (glaise.body.onFloor())
+                        {
+                            me.glaise += 1;
+                            glaise.destroy();
+                        }
+                    });
+                }
+            });
+
+            this.tweens.add({
+                targets: this.glouton,
+                duration: 2000,
+                x: this.glouton.x - 130,
+                delay: 550,
+                ease: 'Power1',
+                repeat: -1,
+                yoyo: true,
+                onYoyo: function () { me.glouton.setFlipX(me.direction); me.direction === true ? me.direction = false : me.direction = true; },
+                onRepeat: function () { me.glouton.setFlipX(me.direction); me.direction === true ? me.direction = false : me.direction = true; }
+            });
+        });
+
+        this.collision_arbre = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('collision_arbre').objects.forEach((arbre) => {
+            this.collision_arbre_boup = this.collision_arbre.create(arbre.x, arbre.y,"vide").setOrigin(0).setDisplaySize(arbre.width,arbre.height);
+        });
+
+        this.overlap_eau = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('overlap_eau').objects.forEach((eau) => {
+            this.overlap_eau_boup = this.overlap_eau.create(eau.x, eau.y,"vide").setOrigin(0).setDisplaySize(eau.width,eau.height);
+        });
+
+        this.overlap_eau_surface = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('overlap_eau_surface').objects.forEach((eau) => {
+            this.overlap_eau_surface_boup = this.overlap_eau_surface.create(eau.x, eau.y,"vide").setOrigin(0).setDisplaySize(eau.width,eau.height);
+        });
+
+        this.checkpoint = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('checkpoint').objects.forEach((point) => {
+            this.checkpoint_boup = this.checkpoint.create(point.x, point.y,"vide").setOrigin(0).setDisplaySize(point.width,point.height);
+        });
+
+        this.branche = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('branche').objects.forEach((baton) => {
+            this.branche_boup = this.branche.create(baton.x, baton.y-baton.height,"branche").setOrigin(0).setDisplaySize(baton.width,baton.height);
+        });
+
+        this.pique = this.physics.add.group({
+            allowGravity: false,
+            immovable: true
+        });
+        map.getObjectLayer('pique').objects.forEach((aie) => {
+            this.pique_boup = this.pique.create(aie.x, aie.y,"vide").setOrigin(0).setDisplaySize(aie.width,aie.height);
+        });
+
+        this.objet_glaise = this.physics.add.group({
+            allowGravity: true,
+            immovable: false
+        });
+        map.getObjectLayer('glaise').objects.forEach((glaise) => {
+            this.glaise_boup = this.objet_glaise.create(glaise.x, glaise.y,"glaise").setOrigin(0);
+        });
+        this.physics.add.collider(this.collision_sol,this.objet_glaise);
+
+        this.physics.add.overlap(this.player, this.checkpoint,function ()
         {
             me.checkpointX = me.player.x;
             me.checkpointY = me.player.y;
         });
 
-        this.physics.add.collider(this.player, this.ressources,function (joueur , ressource)
-        {
-            me.materiaux += 1 ;
-            ressource.destroy();
-        });
-        this.physics.add.collider(this.player, platforms);
-        this.physics.add.collider(this.player, this.speciales);
-        this.physics.add.collider(this.player, this.barrages,function ()
+        this.physics.add.collider(this.player, this.collision_sol);
+        this.physics.add.collider(this.player, this.collision_arbre);
+        this.physics.add.collider(this.player, this.pique,function ()
         {
             me.respawn();
         });
-        this.physics.add.overlap(this.player, this.constructeurs,function ()
+        this.physics.add.collider(this.player, this.objet_glaise,function (player,glaise)
         {
-            if (me.materiaux >= 1)
-            {
-                me.materiaux -= 1;
-                const ponts = map.createLayer('Ponts', tileset, 0, 0);
-                ponts.setCollisionByExclusion(-1, true);
-                me.physics.add.collider(me.player, ponts);
-            }
-        });
-        this.anims.create({
-            key: 'walk',
-            frames: this.anims.generateFrameNames('player', {
-                prefix: 'robo_player_',
-                start: 2,
-                end: 3,
-            }),
-            frameRate: 10,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'idle',
-            frames: [{ key: 'player', frame: 'robo_player_0' }],
-            frameRate: 10,
-        });
-        this.anims.create({
-            key: 'jump',
-            frames: [{ key: 'player', frame: 'robo_player_1' }],
-            frameRate: 10,
+            me.glaise += 1;
+            glaise.destroy();
         });
 
-        this.sword = this.physics.add.sprite(100, 100, "saw");
-        this.sword.body.setAllowGravity(false);
-        this.sword.setDepth(1);
-        this.sword.setVisible(false);
-        this.sword.attack = 100;
-        this.sword.disableBody();
-        this.physics.add.collider(this.sword, this.branches,function (crocs , branche)
+        this.crocs = this.physics.add.sprite(100, 100, "aze");
+        this.crocs.body.setAllowGravity(false);
+        this.crocs.setDepth(1);
+        this.crocs.setVisible(false);
+        this.crocs.attack = 100;
+        this.crocs.disableBody();
+        this.physics.add.collider(this.crocs, this.branche,function (crocs , branche)
         {
-            me.ressourceboup = me.ressources.create(branche.x, branche.y-branche.height,"ressources").setOrigin(0)
-            me.materiaux += 1 ;
             branche.destroy();
+            me.objet_bois = me.physics.add.sprite(branche.x, branche.y-branche.height,"baton").setOrigin(0);
+            me.physics.add.collider(me.collision_sol,me.objet_bois);
+            me.physics.add.collider(me.player, me.objet_bois,function (player,baton)
+            {
+                if (baton.body.onFloor())
+                {
+                    me.baton += 1;
+                    baton.destroy();
+                }
+            });
         });
 
-        this.physics.add.overlap(this.player, this.eaus);
-        //this.physics.add.overlap(this.player, this.eauss);
+        const sol = map.createLayer('sol', tileset, 0, 0);
+        const eau = map.createLayer('eau', tileset, 0, 0);
 
+        // sol.scrollFactorX = 1;
+        // eau.scrollFactorX = 1;
+        // arbre.scrollFactorX = 0.99;
+        // foret_foncee.scrollFactorX = 0.89;;
+        // foret_clair.scrollFactorX = 0.79;
+        // foret_fond.scrollFactorX = 1;
+        //
+        // nuage.scrollFactorX = 0.29;
+        // nuage.scrollFactorY = 0.29;
+        // fond.scrollFactorX = 0.4;
+        // fond.scrollFactorY = 0.4;
 
         this.cameras.main.startFollow(this.player);
-        this.cameras.main.setRoundPixels(true);
+        this.cameras.main.setZoom(2);
+        this.cameras.main.setRoundPixels(false);
         this.inputs();
     }
 
@@ -210,13 +260,13 @@ class Tableau1 extends Phaser.Scene{
                     if (me.danseau == false)
                     {
                         me.player.setVelocityX(200);
-                        if (me.player.body.onFloor()) {
-                            me.player.play('walk', true);
+                        if (me.player.body.onFloor())
+                        {
                         }
                     }
                     else
                     {
-                        me.player.setVelocityX(300);
+                        me.player.setVelocityX(160);
                     }
                     break;
                 case Phaser.Input.Keyboard.KeyCodes.LEFT:
@@ -224,35 +274,45 @@ class Tableau1 extends Phaser.Scene{
                     {
                         me.player.setVelocityX(-200);
                         if (me.player.body.onFloor()) {
-                            me.player.play('walk', true);
                         }
                     }
                     else
                     {
-                        me.player.setVelocityX(-300);
+                        me.player.setVelocityX(-160);
                     }
                     break;
                 case Phaser.Input.Keyboard.KeyCodes.UP:
                     if (me.danseau == true)
                     {
-                        me.player.setVelocityY(-300);
+                        me.player.setVelocityY(-160);
                     }
                     break;
                 case Phaser.Input.Keyboard.KeyCodes.DOWN:
                     if (me.danseau == true)
                     {
-                        me.player.setVelocityY(300);
+                        me.player.setVelocityY(160);
                     }
                     break;
                 case Phaser.Input.Keyboard.KeyCodes.SPACE:
                     if (me.player.body.onFloor() || me.sautage == true || me.danssurface == true) {
                         me.sautage = false;
-                        me.player.setVelocityY(-650);
-                        me.player.play('jump', true);
+                        me.player.setVelocityY(-400);
                     }
                     break;
+                case Phaser.Input.Keyboard.KeyCodes.S:
+                    if(me.player.body.onFloor())
+                    {
+                        me.crocs.setVisible(true);
+                        me.crocs.enableBody()
+                        me.time.addEvent({
+                            delay: 250, callback: function () {
+                                me.crocs.disableBody()
+                                me.crocs.setVisible(false);
+                            }, callbackScope: me
+                        });
+                        break;
+                    }
                 default:
-                    me.player.play('idle', true);
                     me.player.setVelocityX(0);
                     break;
             }
@@ -264,11 +324,9 @@ class Tableau1 extends Phaser.Scene{
             switch (kevent.keyCode)
             {
                 case Phaser.Input.Keyboard.KeyCodes.RIGHT:
-                    me.player.play('idle', true);
                     me.player.setVelocityX(0);
                     break;
                 case Phaser.Input.Keyboard.KeyCodes.LEFT:
-                    me.player.play('idle', true);
                     me.player.setVelocityX(0);
                     break;
                 case Phaser.Input.Keyboard.KeyCodes.UP:
@@ -283,36 +341,22 @@ class Tableau1 extends Phaser.Scene{
                         me.player.setVelocityY(25);
                     }
                     break;
-                case Phaser.Input.Keyboard.KeyCodes.S:
-                    me.sword.setVisible(true);
-                    me.sword.enableBody()
-                    me.time.addEvent({ delay: 250, callback: function (){
-                            me.sword.disableBody()
-                            me.sword.setVisible(false);
-                        }, callbackScope: me });
-                    break;
                 case Phaser.Input.Keyboard.KeyCodes.X:
                     if(me.player.body.onFloor())
                     {
                         me.sautage = true;
-                        me.player.setVelocityY(-850);
+                        me.player.setVelocityY(-350);
 
-                        me.sword.setVisible(true);
-                        me.sword.enableBody()
+                        me.crocs.setVisible(true);
+                        me.crocs.enableBody()
                         me.time.addEvent({ delay: 250, callback: function (){
-                                me.sword.disableBody()
-                                me.sword.setVisible(false);
+                                me.crocs.disableBody()
+                                me.crocs.setVisible(false);
                                 me.player.setVelocityY(0);
                             }, callbackScope: me });
                     }
                     break;
-                case Phaser.Input.Keyboard.KeyCodes.SPACE:
-                    me.player.play('idle', true);
-                    me.player.setVelocityX(0);
-                    break;
                 default:
-                    me.player.play('idle', true);
-                    me.player.setVelocityX(0);
                     break;
             }
         });
@@ -321,27 +365,29 @@ class Tableau1 extends Phaser.Scene{
 
     update()
     {
-        if (this.player.body.velocity.y > 0)
+        for (var i = 0; i < this.collision_arbre.getChildren().length;i++)
         {
-            this.speciales.setCollisionByExclusion(-1, true);
-        }
-        else
-        {
-            this.speciales.setCollisionByExclusion(-1, false);
+            if (this.collision_arbre.getChildren()[i].y > this.player.y)
+            {
+                this.collision_arbre.getChildren()[i].body.enable = true;
+            }
+            else
+            {
+                this.collision_arbre.getChildren()[i].body.enable = false;
+            }
         }
 
-        this.danseau = this.physics.overlap(this.player, this.eaus) ? true : false;
-        this.danssurface = this.physics.overlap(this.player, this.eauss) ? true : false;
-        console.log(this.player.gravityY);
+        this.danseau = this.physics.overlap(this.player, this.overlap_eau) ? true : false;
+        this.danssurface = this.physics.overlap(this.player, this.overlap_eau_surface) ? true : false;
         if (this.danssurface == true)
         {
-            this.player.setGravityY(-100);
+             this.player.setGravityY(-100);
         }
         else
         {
             if (this.danseau == true)
             {
-                this.player.setGravityY(-1000);
+                this.player.setGravityY(-550);
             }
             else
             {
@@ -349,15 +395,15 @@ class Tableau1 extends Phaser.Scene{
             }
         }
 
-        this.sword.y = this.player.y;
+        this.crocs.y = this.player.y;
         if (this.player.body.velocity.x > 0)
         {
-            this.sword.x = this.player.x+20;
+            this.crocs.x = this.player.x+20;
             this.player.setFlipX(false);
         }
         else if (this.player.body.velocity.x < 0)
         {
-            this.sword.x = this.player.x-20;
+            this.crocs.x = this.player.x-20;
             this.player.setFlipX(true);
         }
     }

@@ -1,17 +1,18 @@
 let gameConfig = {
     type: Phaser.AUTO,
-    width: 800,//1920,
-    height: 600,//1080,
+    width: 1280,
+    height: 720,
     backgroundColor: '#000000',
     parent: 'game',
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 500 }
+            gravity: { y: 500 },
+            debug:true
         }
     },
-    scene: new Tableau1(),
-    debug:true
+    pixelArt: true,
+    scene: new Tableau1()
 
 };
 let game = new Phaser.Game(gameConfig);
