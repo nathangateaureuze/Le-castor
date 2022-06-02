@@ -6,7 +6,7 @@ class Menu extends Phaser.Scene {
 
     preload()
     {
-        this.load.image("fond","assets/tiled/images/infos/info_finale_incomplète.png")
+        this.load.image("fond","assets/tiled/images/paysage.png")
     }
 
     create()

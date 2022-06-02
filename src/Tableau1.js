@@ -382,6 +382,7 @@ class Tableau1 extends Phaser.Scene{
             });
             this.physics.add.collider(this.crocs, this.glouton_top,function (crocs , glouton)
             {
+
                 glouton.destroy();
                 if (Phaser.Math.Between(0, 1))
                 {
@@ -423,14 +424,7 @@ class Tableau1 extends Phaser.Scene{
                 ease: 'Power1',
                 repeat: -1,
                 yoyo: true,
-                onYoyo: function () { if (me.physics.sprite(me.gloutons_top.getChildren()[i]).exists())
-                {
-                    me.gloutons_top.getChildren()[i].setFlipX(false);
-                }},
-                onRepeat: function () { if (me.physics.sprite(me.gloutons_top.getChildren()[i]).exists())
-                {
-                    me.gloutons_top.getChildren()[i].setFlipX(true);
-                }}
+                flipX: true,
             });
         }
 
@@ -574,7 +568,7 @@ class Tableau1 extends Phaser.Scene{
                     {
                         if (me.player.body.onFloor() || me.sautage == true || me.danssurface == true) {
                             me.sautage = false;
-                            me.player.setVelocityY(-800);
+                            me.player.setVelocityY(-400);
                             me.kangouroux = true;
                         }
                     }

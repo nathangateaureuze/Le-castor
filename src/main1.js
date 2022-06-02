@@ -12,7 +12,7 @@ let gameConfig = {
         }
     },
     pixelArt: true,
-    scene: [new Menu(),new Tableau1()]
+    scene: [new Menu(),new Tableau1(),new Fin()]
 
 };
 let game = new Phaser.Game(gameConfig);
