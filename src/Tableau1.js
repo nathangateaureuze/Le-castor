@@ -3,6 +3,9 @@ class Tableau1 extends Phaser.Scene{
     constructor() {
         super("Tableau1");
     }
+    init(langue){
+        this.enfrancais = langue.enfrancais;
+    }
 
     preload()
     {
@@ -90,8 +93,8 @@ class Tableau1 extends Phaser.Scene{
         this.checkpointY = 100;
         this.checkpointX = 100;
 
-        this.baton = 50;
-        this.glaise = 50;
+        this.baton = 0;
+        this.glaise = 0;
 
         this.anims.create({
             key: 'castor_idle',
@@ -205,7 +208,7 @@ class Tableau1 extends Phaser.Scene{
 
         const sol = map.createLayer('sol', tileset, 0, 0);
 
-        this.player = this.physics.add.sprite(10000, 300, 'castor_idle1').setOrigin(0);
+        this.player = this.physics.add.sprite(832, 600, 'castor_idle1').setOrigin(0);
         this.player.setSize(64,32);
         this.player.setOffset(0,32);
 
@@ -363,8 +366,7 @@ class Tableau1 extends Phaser.Scene{
                 ease: 'Power1',
                 repeat: -1,
                 yoyo: true,
-                onYoyo: function () { me.glouton.setFlipX(false); },
-                onRepeat: function () { me.glouton.setFlipX(true); }
+                flipX: true
             });
         });
         this.gloutons_top = this.physics.add.group({
@@ -413,6 +415,7 @@ class Tableau1 extends Phaser.Scene{
             });
             this.glouton_top.setFlipX(true);
             this.gloutons_top.add(this.glouton_top);
+            //dzd
         });
         for (let i = 0; i < this.gloutons_top.getChildren().length;i++)
         {
@@ -472,13 +475,13 @@ class Tableau1 extends Phaser.Scene{
         // foret_clair.scrollFactorX = 0.79;
         // foret_fond.scrollFactorX = 1;
         //
-        // nuage.scrollFactorX = 0.29;
+        nuage.scrollFactorX = 0.29;
         // nuage.scrollFactorY = 0.29;
-        // fond.scrollFactorX = 0.4;
+        fond.scrollFactorX = 0.4;
         // fond.scrollFactorY = 0.4;
 
         this.cameras.main.setZoom(2);
-        this.cameras.main.setRoundPixels(false);
+        this.cameras.main.setRoundPixels(true);
         this.cameras.main.setBounds(0,0,10976,2368);
 
 
@@ -504,6 +507,7 @@ class Tableau1 extends Phaser.Scene{
                 me.time.addEvent({
                     delay: 3000,
                     callback: ()=>{
+                        this.cameras.main.setZoom(1);
                         me.cameras.main.pan(me.player.x,me.player.y,2000,'Power2')
                         me.cinematique = true;
                     },
@@ -629,7 +633,7 @@ class Tableau1 extends Phaser.Scene{
                                     me.time.addEvent({
                                         delay: 3000,
                                         callback: ()=>{
-                                            window.close();
+                                            me.scene.start("Fin",{enfrancais: me.enfrancais});
                                         },
                                         loop: false,
                                     })
@@ -901,7 +905,6 @@ class Tableau1 extends Phaser.Scene{
 
                 this.gloutons_top.add(this.glouton_top);
             }
-            console.log(this.gloutons_top.getChildren().length);
         }
     }
 }
